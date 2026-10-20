@@ -1,6 +1,6 @@
 /* StudyQuest service worker: caches the app so it opens offline.
    Bump VERSION on every deploy so devices pick up the new copy. */
-const VERSION="studyquest-v2",FILES=["./","./index.html","./manifest.webmanifest","./favicon.ico","./icons/icon-192.png","./icons/icon-512.png","./icons/icon-maskable-512.png","./icons/apple-touch-icon.png","./icons/icon.svg"];
+const VERSION="studyquest-v5",FILES=["./","./index.html","./manifest.webmanifest","./favicon.ico","./icons/icon-192.png","./icons/icon-512.png","./icons/icon-maskable-512.png","./icons/apple-touch-icon.png","./icons/icon.svg"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(VERSION).then(c=>Promise.all(FILES.map(f=>c.add(f).catch(()=>{})))).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==VERSION).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener("fetch",e=>{
