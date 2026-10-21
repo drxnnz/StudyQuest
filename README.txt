@@ -1,7 +1,7 @@
 StudyQuest web app pack
-FILES: index.html, manifest.json, sw.js, offline.html, icons/
-RUN: needs https or localhost (service worker rule). Example: python3 -m http.server 8080 then open http://localhost:8080
-DEPLOY: upload the whole folder to Netlify, Vercel, Cloudflare Pages, GitHub Pages or any https host. Keep all files in the same folder.
-INSTALL: Android Chrome/Brave: menu > Install app, or the in-app Install app button. Desktop Chrome/Edge: install icon in address bar. iPhone Safari: Share > Add to Home Screen.
-OFFLINE: open once online. After that the app loads without internet. Study data stays in the browser on that device.
-UPDATE: change V in sw.js (studyquest-v1 to studyquest-v2) each time you change files.
+FILES: index.html, manifest.json, sw.js, vercel.json, fonts/, icons/
+DEPLOY (Vercel): upload this folder (or push to GitHub and import). No build step. Framework preset: Other. Output directory: root.
+OFFLINE: open the site once online. The service worker saves everything. After that it opens with no internet. AI features still need internet.
+INSTALL: Android Chrome/Brave: menu > Install app, or the Install app button. Desktop Chrome/Edge: icon in address bar. iPhone Safari: Share > Add to Home Screen.
+MOVE DATA: Help & About > Export my data on the old device, then Import data on the new one.
+UPDATE: change V in sw.js (studyquest-v2 to v3) every time you change files, then redeploy.
