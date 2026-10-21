@@ -1514,6 +1514,14 @@ html body #sqBotFab{z-index:90}
 @media(min-width:801px){html body .view-inner{padding-bottom:84px}}
 html body .sq-install-side{width:100%;margin:0 0 10px;min-height:42px}html body .sq-install-slot .sq-install-side{width:auto;margin:0}
 html body .sidebar.collapsed .sq-install-side{display:none}
+/* SQ device fit v4 */
+.topbar-title{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;word-break:normal}
+.topbar .icon-btn{flex:0 0 auto}
+@media(max-width:800px){.topbar-spacer{display:none}.topbar-title{flex:1 1 0}}
+@media(max-width:380px){.topbar{gap:4px!important;padding:0 8px!important}.topbar .icon-btn{width:38px;height:38px;min-width:38px;min-height:38px;border-radius:10px}.topbar-title{font-size:14px}}
+@media(max-width:340px){.topbar .icon-btn{width:36px;height:36px;min-width:36px;min-height:36px}.topbar-title{font-size:13.5px}}
+html body .subject-card:not(:has(.card-actions))>.subject-meta{margin-right:0;min-height:0;margin-top:12px}
+.subject-meta{flex-wrap:wrap;row-gap:4px}.subject-meta>span{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -3795,7 +3803,7 @@ function formatGlanceHTML(){
   if(b.classList.contains("quiz-focus-active")||document.querySelector(".modal-backdrop.open"))return false;
   const a=document.activeElement;return !(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)||a&&a.isContentEditable);
  }
- function showTip(){tip.classList.remove("show");setTimeout(()=>{tip.textContent=TIPS[ti++%TIPS.length];tip.classList.add("show")},260)}
+ function showTip(){if(document.querySelector(".modal-backdrop.open")){exit();return}tip.classList.remove("show");setTimeout(()=>{tip.textContent=TIPS[ti++%TIPS.length];tip.classList.add("show")},260)}
  function enter(){mount();idle=true;b.classList.add("is-idle");showTip();tipTimer=setInterval(showTip,TIP_MS)}
  function exit(){idle=false;b.classList.remove("is-idle");if(tip)tip.classList.remove("show");clearInterval(tipTimer)}
  function check(){const left=IDLE_MS-(performance.now()-last);if(left>50){timer=setTimeout(check,left);return}if(!idle&&allowed())enter();timer=setTimeout(check,IDLE_MS)}
@@ -4013,7 +4021,7 @@ new MutationObserver(ms=>{for(const m of ms){const t=m.target;if(m.type==="attri
 /* ===== SQ: full data transfer (export / import) ===== */
 const SQ_KEYS=["sq-prog","sf-sessions","sf-theme-v2","sf-look","sf-accent","sf-sound-v1","sf-bottom-tabs","sf-chats-v1","sq-prompt-short","sf-progress-migrated-v1"];
 function sqExportAll(){const ls={};SQ_KEYS.forEach(k=>{try{const v=localStorage.getItem(k);if(v!==null)ls[k]=v}catch{}});downloadText(JSON.stringify({app:"StudyQuest",version:2,exported:new Date().toISOString(),db,ls},null,2),"studyquest-data-"+new Date().toISOString().slice(0,10)+".json","application/json;charset=utf-8");toast("Data exported. Import it on your other device.")}
-function sqImportAll(input){const f=input.files&&input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(String(r.result)),b=d.db||d;if(!b||!Array.isArray(b.subjects))throw Error();confirmModal("Import your data?","This replaces the subjects and progress on this device.","Import data",()=>{db={...b,subjects:b.subjects.map(normalizeSubject),deletedDecks:Array.isArray(b.deletedDecks)?b.deletedDecks:[]};save();if(d.ls)Object.keys(d.ls).forEach(k=>{if(SQ_KEYS.includes(k))try{localStorage.setItem(k,d.ls[k])}catch{}});closeModal();toast("Data imported.");setTimeout(()=>location.reload(),700)})}catch{toast("That file is not a StudyQuest data file.")}input.value=""};r.readAsText(f)}
+function sqImportAll(input){const f=input.files&&input.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(String(r.result)),b=d.db||d;if(!b||!Array.isArray(b.subjects))throw Error();confirmModal("Import your data?","This replaces the subjects and progress on this device.","Import data",()=>{db={...b,subjects:b.subjects.map(normalizeSubject),deletedDecks:Array.isArray(b.deletedDecks)?b.deletedDecks:[]};if(!save()){closeModal();return}if(d.ls)Object.keys(d.ls).forEach(k=>{if(SQ_KEYS.includes(k))try{localStorage.setItem(k,d.ls[k])}catch{}});closeModal();toast("Data imported.");setTimeout(()=>location.reload(),700)})}catch{toast("That file is not a StudyQuest data file.")}input.value=""};r.readAsText(f)}
 </script>
 <script>
 /* ===== SQ: install button in sidebar, chat stop ===== */
@@ -4030,7 +4038,7 @@ if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!standalone()&&!sessionStorage
 (function(){const o=window.sqSend;if(typeof o!=="function")return;
 window.sqSend=function(){if(sqBot.busy){try{sqBot.ctl.abort()}catch{}return}
 const b=document.querySelector('#sqBot button[onclick="sqSend()"]'),h=b&&b.innerHTML;if(b)b.textContent="Stop";
-const r=o();Promise.resolve(r).finally(()=>{if(b)b.innerHTML=h});return r}})();
+let r;try{r=o()}catch(e){if(b)b.innerHTML=h;throw e}Promise.resolve(r).catch(()=>{}).finally(()=>{if(b)b.innerHTML=h});return r}})();
 </script>
 </body>
 </html>
