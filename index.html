@@ -1785,6 +1785,47 @@ html[data-kid="1"] body .nav-active-slider{border-radius:14px}
 html[data-kid="1"] body .choice{min-height:68px;font-size:1.08em}
 html[data-kid="1"] body .stat .stat-note{display:none}
 html[data-kid="1"] body .page-title{letter-spacing:-.02em}
+
+/* ===== bottom action bar: full width, equal buttons, one line ===== */
+html:not([data-look="mc"]) body .study-actions{display:flex!important;flex-wrap:nowrap!important;width:100%!important;max-width:960px;margin-inline:auto!important;gap:10px;padding-bottom:env(safe-area-inset-bottom,0)}
+html:not([data-look="mc"]) body .study-actions>.btn,html:not([data-look="mc"]) body .study-actions>button{flex:1 1 0!important;min-width:0;width:auto!important;justify-content:center;text-align:center;white-space:nowrap;min-height:52px;padding:0 10px!important}
+html:not([data-look="mc"]) body .study-actions>.tag{flex:1 1 100%!important;justify-content:center;text-align:center;min-height:44px;display:inline-flex;align-items:center}
+html:not([data-look="mc"]) body .study-actions.review-return>.btn{flex:1 1 0!important}
+@media(max-width:400px){html:not([data-look="mc"]) body .study-actions{gap:8px}html:not([data-look="mc"]) body .study-actions>.btn,html:not([data-look="mc"]) body .study-actions>button{font-size:14px;padding:0 6px!important;min-height:50px}}
+/* ===== matching grid: fills the screen, compact tiles, clear Q / A ===== */
+html:not([data-look="mc"]) body .view-inner.mg-page{max-width:none!important}
+html:not([data-look="mc"]) body body.quiz-focus-active .mg-grid,html:not([data-look="mc"]) body .mg-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,clamp(136px,15vw,230px)),1fr))!important;grid-auto-rows:minmax(76px,auto)!important;align-content:center!important;gap:clamp(8px,1vw,14px)!important}
+html:not([data-look="mc"]) body body.quiz-focus-active .mg-tile,html:not([data-look="mc"]) body .mg-tile{position:relative;min-height:76px;padding:22px 10px 10px;border:1.5px solid var(--line);border-radius:14px;background:var(--surface2);font-size:clamp(14px,1.05vw,19px);box-shadow:none}
+html:not([data-look="mc"]) body .mg-tile.q{border-top:1.5px solid var(--depth);border-color:var(--depth);background:var(--surface)}
+html:not([data-look="mc"]) body .mg-tile::before{position:absolute;top:7px;left:10px;font-size:10.5px;font-weight:800;letter-spacing:.04em;color:var(--muted);opacity:.9}
+html:not([data-look="mc"]) body .mg-tile.q::before{content:"Q"}html:not([data-look="mc"]) body .mg-tile.a::before{content:"A"}
+html:not([data-look="mc"]) body .mg-tile:hover{border-color:var(--text)}
+html:not([data-look="mc"]) body .mg-tile.sel{border-color:var(--text);box-shadow:inset 0 0 0 2px var(--text);background:var(--surface);color:var(--text)}
+html:not([data-look="mc"]) body .mg-tile.done{border-color:var(--good);background:color-mix(in srgb,var(--good) 10%,var(--surface))}
+html:not([data-look="mc"]) body .mg-tile.bad{border-color:var(--bad)}
+html:not([data-look="mc"]) body body.quiz-focus-active .mg-panel,html:not([data-look="mc"]) body .mg-panel{padding:clamp(10px,1.4vw,20px)}
+html:not([data-look="mc"]) body .mg-hint{font-size:13.5px;color:var(--muted);margin-top:12px}
+@media(max-width:560px){html:not([data-look="mc"]) body body.quiz-focus-active .mg-grid,html:not([data-look="mc"]) body .mg-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-rows:minmax(72px,auto)!important}html:not([data-look="mc"]) body body.quiz-focus-active .mg-tile,html:not([data-look="mc"]) body .mg-tile{font-size:14px;padding:20px 8px 8px}}
+
+/* bar overrides inside quiz focus layout */
+html:not([data-look="mc"]) body.quiz-focus-active .study-actions{display:flex!important;flex-wrap:nowrap!important;width:100%!important;max-width:960px!important;margin-inline:auto!important;gap:10px!important}
+html:not([data-look="mc"]) body.quiz-focus-active .study-actions>.btn,html:not([data-look="mc"]) body.quiz-focus-active .study-actions>button{flex:1 1 0!important;min-width:0!important;width:auto!important;justify-content:center!important;min-height:54px!important;padding:0 10px!important;font-size:clamp(15px,1.2vw,18px)}
+html:not([data-look="mc"]) body.quiz-focus-active .study-actions>.tag{flex:1 1 100%!important}
+@media(max-width:400px){html:not([data-look="mc"]) body.quiz-focus-active .study-actions>.btn,html:not([data-look="mc"]) body.quiz-focus-active .study-actions>button{font-size:14px;min-height:50px!important;padding:0 6px!important}}
+@media(min-width:1500px){html:not([data-look="mc"]) body .mg-grid,html:not([data-look="mc"]) body.quiz-focus-active .mg-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important}}
+@media(min-width:900px) and (max-width:1499px){html:not([data-look="mc"]) body .mg-grid,html:not([data-look="mc"]) body.quiz-focus-active .mg-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media(min-width:561px) and (max-width:899px){html:not([data-look="mc"]) body .mg-grid,html:not([data-look="mc"]) body.quiz-focus-active .mg-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+html:not([data-look="mc"]) body.quiz-focus-active .mg-grid{grid-auto-rows:minmax(92px,16vh)!important}
+@media(max-width:560px){html:not([data-look="mc"]) body.quiz-focus-active .mg-grid{grid-auto-rows:minmax(76px,auto)!important}}
+
+/* final: bottom bar = equal columns, full width (grid) */
+html:not([data-look="mc"]) body .study-actions,html:not([data-look="mc"]) body.quiz-focus-active .study-actions{display:grid!important;grid-auto-flow:column!important;grid-auto-columns:minmax(0,1fr)!important;gap:10px!important;width:100%!important;max-width:960px!important;margin-inline:auto!important;justify-content:stretch!important;flex-wrap:nowrap!important}
+html:not([data-look="mc"]) body .study-actions>.btn,html:not([data-look="mc"]) body.quiz-focus-active .study-actions>.btn,html:not([data-look="mc"]) body .study-actions>button,html:not([data-look="mc"]) body.quiz-focus-active .study-actions>button{width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;justify-content:center!important;white-space:nowrap}
+html:not([data-look="mc"]) body .study-actions>.tag,html:not([data-look="mc"]) body.quiz-focus-active .study-actions>.tag{grid-column:1/-1;grid-auto-flow:row}
+
+/* in-game bottom bar: true 100% width */
+html:not([data-look="mc"]) body .study-actions,html:not([data-look="mc"]) body.quiz-focus-active .study-actions{max-width:none!important;margin-inline:0!important;grid-template-columns:none!important;grid-auto-columns:minmax(0,1fr)!important}
+html:not([data-look="mc"]) body .study-actions>.btn,html:not([data-look="mc"]) body.quiz-focus-active .study-actions>.btn{padding-inline:6px!important}
 </style>
 
 </head>
