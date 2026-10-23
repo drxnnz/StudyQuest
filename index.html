@@ -1523,8 +1523,273 @@ html body .sidebar.collapsed .sq-install-side{display:none}
 html body .subject-card:not(:has(.card-actions))>.subject-meta{margin-right:0;min-height:0;margin-top:12px}
 .subject-meta{flex-wrap:wrap;row-gap:4px}.subject-meta>span{white-space:nowrap}
 </style>
+<style id="sq-redesign">
+/* ===== SQ REDESIGN v5: flat ink, ledger stats, quest HUD =====
+   Design notes: one ink colour (follows Interface Color), 1px rules instead of
+   soft shadows, no blobs, no chunky 3D, sentence-case labels. All existing
+   transitions, view animations and effects are kept. Minecraft look is untouched. */
+html:not([data-look="mc"]){--bg:#f5f5f6;--surface:#fff;--surface2:#efeff1;--text:#0f0f11;--muted:#5a5b63;--line:#e0e0e4;--good:#0e7a54;--bad:#bd2f48;--r:14px;--side:232px;--shadow:none;--shadow2:none;--lift:none;--depth:color-mix(in srgb,var(--text) 45%,var(--line))}
+html[data-theme="dark"]:not([data-look="mc"]){--bg:#000;--surface:#0d0d0f;--surface2:#18181b;--text:#f4f4f6;--muted:#a6a6af;--line:#27272c;--good:#4fd6a0;--bad:#ff7d92;--lift:none}
+html:not([data-look="mc"]) body{background:var(--bg)}
+html:not([data-look="mc"]) body ::selection{background:color-mix(in srgb,var(--accent) 22%,transparent)}
+
+/* ---- type: sentence case, tight display, no eyebrow clutter ---- */
+html:not([data-look="mc"]) body :is(label,.field label,.stat-label,.nav-section,.brand-sub,.tag,.eyebrow,th,.panel-desc){text-transform:none;letter-spacing:0}
+html:not([data-look="mc"]) body .eyebrow{font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:6px}
+html:not([data-look="mc"]) body .page-head .eyebrow{display:none}
+html:not([data-look="mc"]) body .page-title{font-size:clamp(30px,3.6vw,46px);line-height:1.04;letter-spacing:-.04em;font-weight:800}
+html:not([data-look="mc"]) body .page-subtitle{font-size:15px;line-height:1.55;color:var(--muted);max-width:56ch;margin-top:10px}
+html:not([data-look="mc"]) body :is(.field label,label){font-size:13px;font-weight:600;color:var(--text)}
+html:not([data-look="mc"]) body h3{letter-spacing:-.02em}
+
+/* ---- shell ---- */
+html:not([data-look="mc"]) body .view{padding:clamp(18px,3vw,44px)}
+html:not([data-look="mc"]) body .view-inner:not(.study-layout){max-width:1180px}
+html:not([data-look="mc"]) body .page-head{align-items:flex-end;margin-bottom:26px}
+html:not([data-look="mc"]) body .page-head>.actions,html:not([data-look="mc"]) body .page-head>.btn{margin-bottom:0}
+
+/* ---- sidebar: plain rows, ink-filled active row ---- */
+html:not([data-look="mc"]) body .sidebar{padding:18px 12px 14px;background:var(--surface);border-right:1px solid var(--line)}
+html:not([data-look="mc"]) body .brand-logo{animation:none;border-radius:11px;box-shadow:none}
+html:not([data-look="mc"]) body .brand-name{font-size:16px;letter-spacing:-.03em}
+html:not([data-look="mc"]) body .brand-sub{font-size:12px;font-weight:500;color:var(--muted);white-space:nowrap}
+html:not([data-look="mc"]) body .nav-section{display:none}
+html:not([data-look="mc"]) body .nav-list{margin-top:18px}
+html:not([data-look="mc"]) body .nav-btn{min-height:40px;border-radius:10px;gap:12px;padding:0 12px;font-weight:600;color:var(--muted);background:transparent}
+html:not([data-look="mc"]) body .nav-btn .nav-icon,html:not([data-look="mc"]) body .nav-btn .create-nav-icon,html:not([data-look="mc"]) body .nav-btn.active .nav-icon,html:not([data-look="mc"]) body .nav-btn.active .create-nav-icon{background:none!important;box-shadow:none!important;color:inherit!important;width:22px;height:22px;flex-basis:22px;border-radius:0}
+html:not([data-look="mc"]) body .nav-btn:hover{color:var(--text)}
+html:not([data-look="mc"]) body .nav-btn.active{color:var(--on-accent,#fff)}
+html:not([data-look="mc"]) body .nav-active-slider{background:var(--accent);border-radius:10px;box-shadow:none}
+html:not([data-look="mc"]) body .nav-active-slider:before{display:none}
+html:not([data-look="mc"]) body .sidebar-footer{font-size:11.5px;line-height:1.5;color:var(--muted)}
+html:not([data-look="mc"]) body .sidebar-footer br{display:none}
+html:not([data-look="mc"]) body .sidebar-footer-label{display:block}
+
+/* quest HUD (level, xp, streak) */
+.sq-hud{margin:0 2px 12px;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:var(--surface);display:grid;gap:9px}
+.sq-hud .hud-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.sq-hud .hud-lv{font-size:19px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.sq-hud .hud-st{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+.sq-hud .hud-st svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sq-hud.hot .hud-st{color:var(--text)}
+.sq-hud .hud-bar{height:6px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.sq-hud .hud-bar>span{display:block;height:100%;width:0;border-radius:99px;background:var(--accent);transition:width .7s cubic-bezier(.22,1,.36,1)}
+.sq-hud .hud-note{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sidebar.collapsed .sq-hud{display:none}
+.sq-chip{display:none}
+
+/* ---- topbar: quiet, title only on phones ---- */
+html:not([data-look="mc"]) body .topbar{background:color-mix(in srgb,var(--bg) 84%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);box-shadow:none}
+html:not([data-look="mc"]) body .topbar .icon-btn{width:38px;height:38px;min-width:38px;border-radius:10px;background:transparent;border:1px solid transparent;box-shadow:none;color:var(--muted)}
+html:not([data-look="mc"]) body .topbar .icon-btn:hover{background:var(--surface2);border-color:var(--line);color:var(--text)}
+@media(min-width:801px){html:not([data-look="mc"]) body .topbar-title{visibility:hidden}html:not([data-look="mc"]) body .topbar{height:56px;flex-basis:56px}}
+
+/* ---- buttons: flat, sized to their text ---- */
+html:not([data-look="mc"]) body :is(.btn,.primary){border-radius:10px;font-weight:650;letter-spacing:-.005em;white-space:nowrap;box-shadow:none!important}
+html:not([data-look="mc"]) body .btn:not(.small):not(.icon-btn),html:not([data-look="mc"]) body .primary:not(.small):not(.icon-btn){min-height:42px;padding:0 16px;width:auto}
+html:not([data-look="mc"]) body .btn:not(.primary){background:var(--surface);border:1px solid var(--line);color:var(--text)}
+html:not([data-look="mc"]) body .btn:not(.primary):hover{border-color:var(--depth);background:var(--surface)}
+html:not([data-look="mc"]) body :is(.primary,.btn.primary){background:var(--accent)!important;background-image:none!important;border:1px solid var(--accent);color:var(--on-accent,#fff)!important}
+html:not([data-look="mc"]) body :is(.primary,.btn.primary) svg{stroke:currentColor!important}
+html:not([data-look="mc"]) body .primary:hover{filter:brightness(1.12)}
+html:not([data-look="mc"]) body :is(.btn,.primary):hover{transform:translateY(-1px)}
+html:not([data-look="mc"]) body :is(.btn,.primary):active{transform:scale(.97)!important;transition-duration:.08s}
+html:not([data-look="mc"]) body .btn.small{border-radius:9px}
+html:not([data-look="mc"]) body .icon-btn{border-radius:10px;box-shadow:none}
+html:not([data-look="mc"]) body .more-btn,html:not([data-look="mc"]) body .subject-card .more-btn{border-radius:10px;box-shadow:none!important}
+@media(pointer:coarse){html:not([data-look="mc"]) body .btn:not(.small):not(.icon-btn),html:not([data-look="mc"]) body .primary:not(.small):not(.icon-btn){min-height:44px}}
+/* action rows: wrap, never stretch to 100%, labels stay on one line */
+html:not([data-look="mc"]) body .study-actions,html:not([data-look="mc"]) body .modal-actions,html:not([data-look="mc"]) body .hero .actions,html:not([data-look="mc"]) body .view-inner>.hero .actions{display:flex!important;flex-wrap:wrap;gap:10px;width:auto;justify-content:flex-start;align-items:center}
+html:not([data-look="mc"]) body .study-actions>*,html:not([data-look="mc"]) body .modal-actions>*,html:not([data-look="mc"]) body .hero .actions>*{width:auto!important;flex:0 0 auto;margin:0!important;min-width:0}
+html:not([data-look="mc"]) body .study-actions>.tag{flex:0 0 auto}
+@media(max-width:560px){html:not([data-look="mc"]) body .modal-actions>*,html:not([data-look="mc"]) body .hero .actions>*{flex:1 1 auto}}
+
+/* ---- surfaces ---- */
+html:not([data-look="mc"]) body :is(.panel,.info-card,.lesson-card,.card-row,.deck-card,.trash-card){background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:none}
+html:not([data-look="mc"]) body .panel:hover{border-color:var(--line);box-shadow:none}
+html:not([data-look="mc"]) body .panel:hover .subject-icon{transform:none;box-shadow:none}
+html:not([data-look="mc"]) body input:not([type=checkbox]):not([type=radio]):not([type=range]),html:not([data-look="mc"]) body select,html:not([data-look="mc"]) body textarea{border-radius:10px;background-color:var(--surface)}
+html:not([data-look="mc"]) body .tag{background:var(--surface2);border:1px solid var(--line);border-radius:7px;color:var(--muted);font-weight:600}
+
+/* ---- home: stats become one ledger strip ---- */
+html:not([data-look="mc"]) body .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:18px}
+html:not([data-look="mc"]) body .stats>*,html:not([data-look="mc"]) body .stats .stat{height:auto}
+html:not([data-look="mc"]) body .stats .stat{border:0;border-radius:0;box-shadow:none;background:transparent;min-height:0;padding:18px 22px;gap:2px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transform:none!important}
+html:not([data-look="mc"]) body .stats .stat:nth-child(3n){border-right:0}
+html:not([data-look="mc"]) body .stats .stat:nth-child(n+4){border-bottom:0}
+html:not([data-look="mc"]) body .stat:after,html:not([data-look="mc"]) body .stat:before{display:none!important}
+html:not([data-look="mc"]) body .stat:hover{--ty:0px;border-color:var(--line);box-shadow:none}
+html:not([data-look="mc"]) body .stat .stat-value{font-size:clamp(28px,3vw,38px);font-weight:800;letter-spacing:-.04em;line-height:1.1;transform:none}
+html:not([data-look="mc"]) body .stat .stat-label{font-size:13px;font-weight:600;color:var(--muted)}
+html:not([data-look="mc"]) body .stat .stat-note{font-size:12.5px;color:var(--muted)}
+@media(max-width:560px){html:not([data-look="mc"]) body .stat .stat-note{display:none}html:not([data-look="mc"]) body .stats .stat{padding:12px 14px;justify-content:flex-start;gap:1px}}
+@media(max-width:800px){html:not([data-look="mc"]) body .stats{grid-template-columns:repeat(2,minmax(0,1fr))}html:not([data-look="mc"]) body .stats .stat{padding:14px 16px;border-right:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important}html:not([data-look="mc"]) body .stats .stat:nth-child(2n){border-right:0!important}html:not([data-look="mc"]) body .stats .stat:nth-last-child(-n+2){border-bottom:0!important}html:not([data-look="mc"]) body .stat .stat-value{font-size:26px}}
+
+/* hero: the one dark slab, flat */
+html:not([data-look="mc"]){--hero-bg:color-mix(in srgb,var(--ico-b,#111113) 80%,#000)}
+html:not([data-look="mc"])[data-accent="mono"]{--hero-bg:#111113}
+html:not([data-look="mc"])[data-accent] body .hero{background:var(--hero-bg);border-radius:18px;box-shadow:none;padding:clamp(22px,3vw,34px);color:#fff}
+html:not([data-look="mc"])[data-theme="dark"][data-accent] body .hero{border:1px solid var(--line)}
+html:not([data-look="mc"]) body .hero:before,html:not([data-look="mc"]) body .hero:after{display:none}
+html:not([data-look="mc"]) body .hero h2{font-size:clamp(23px,2.6vw,31px);letter-spacing:-.035em;line-height:1.12;color:#fff}
+html:not([data-look="mc"]) body .hero p{color:rgba(255,255,255,.72);max-width:54ch}
+html:not([data-look="mc"]) body .hero .eyebrow{color:rgba(255,255,255,.62)}
+html:not([data-look="mc"])[data-accent] body .hero .btn.primary{background:#fff!important;border-color:#fff!important;color:#111!important;box-shadow:none!important;animation:none!important}
+html:not([data-look="mc"])[data-accent] body .hero .btn.primary svg{stroke:#111!important}
+html:not([data-look="mc"])[data-accent] body .hero .btn:not(.primary){background:transparent!important;color:#fff!important;border:1px solid rgba(255,255,255,.4)!important;box-shadow:none!important}
+html:not([data-look="mc"])[data-accent] body .hero .btn:not(.primary):hover{border-color:#fff!important}
+html:not([data-look="mc"])[data-accent] body .hero .btn:not(.primary) svg{stroke:#fff!important}
+
+/* ---- section heads ---- */
+html:not([data-look="mc"]) body .section-head h2{font-size:19px;letter-spacing:-.03em}
+
+/* ---- subject cards: icon + title + menu, rule, meta, created + Study ---- */
+html:not([data-look="mc"]) body .subject-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr))!important;gap:14px}
+html:not([data-look="mc"]) body .subject-card{display:grid!important;grid-template-columns:40px minmax(0,1fr) 36px;grid-template-areas:none;column-gap:12px;row-gap:2px;align-items:center;padding:16px!important;transform:none!important;box-shadow:none;border:1px solid var(--line);background:var(--surface)}
+html:not([data-look="mc"]) body .subject-card:hover{border-color:var(--depth);transform:translateY(-2px)!important;box-shadow:none}
+html:not([data-look="mc"]) body .subject-card>.subject-icon{grid-area:auto;grid-column:1;grid-row:1/3;align-self:start;width:40px;height:40px;margin:0;border-radius:10px;background:var(--text);color:var(--bg);font-size:17px;font-weight:800;box-shadow:none;transform:none;display:grid;place-items:center}
+html:not([data-look="mc"]) body .subject-card>h3{grid-area:auto;grid-column:2;grid-row:1;margin:0;padding:0;font-size:15.5px;font-weight:750;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html:not([data-look="mc"]) body .subject-card>p{grid-area:auto;grid-column:2;grid-row:2;margin:0;padding:0;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html:not([data-look="mc"]) body .subject-card>.subject-meta{grid-area:auto;grid-column:1/-1;grid-row:3;margin:14px 0 0!important;padding:11px 0 0;border-top:1px solid var(--line);min-height:0;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12.5px;color:var(--muted)}
+html:not([data-look="mc"]) body .subject-card>.subject-meta>span:last-child{font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+html:not([data-look="mc"]) body .subject-card>.subject-created{grid-area:auto;grid-column:1/-1;grid-row:4;margin:12px 112px 0 0;font-size:12px;line-height:1.4;color:var(--muted);align-self:center}
+html:not([data-look="mc"]) body .subject-card>.subject-created .ic{width:13px;height:13px;margin-right:5px;vertical-align:-2px}
+html:not([data-look="mc"]) body .subject-card>.card-actions{display:contents!important}
+html:not([data-look="mc"]) body .subject-card>.card-actions .more-btn{position:static!important;grid-area:auto;grid-column:3;grid-row:1/3;align-self:start;justify-self:end;margin:0!important;width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;max-width:36px!important;max-height:36px!important;background:transparent;border:1px solid transparent;color:var(--muted)}
+html:not([data-look="mc"]) body .subject-card>.card-actions .more-btn:hover{background:var(--surface2);border-color:var(--line);color:var(--text)}
+html:not([data-look="mc"]) body .subject-card>.card-actions .study-wide{position:static!important;grid-area:auto;grid-column:1/-1;grid-row:4;justify-self:end;margin:12px 0 0!important;width:auto!important;min-height:38px;padding:0 16px!important}
+
+
+/* ---- subject modal: action buttons fit text, lessons are single rows ---- */
+html:not([data-look="mc"]) body .eq-wrap .eq-grid{display:flex!important;flex-wrap:wrap;gap:8px;grid-template-columns:none}
+html:not([data-look="mc"]) body .eq-wrap .eq-grid>.btn{padding:0 13px!important;gap:7px}
+html:not([data-look="mc"]) body .eq-wrap .eq-grid>*{width:auto!important;flex:0 0 auto}
+html:not([data-look="mc"]) body .lesson-list{display:grid;gap:8px}
+html:not([data-look="mc"]) body .lesson-item{border:0!important;background:none!important;padding:0!important;box-shadow:none!important;margin:0}
+html:not([data-look="mc"]) body .lesson-card{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px 14px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);box-shadow:none}
+html:not([data-look="mc"]) body .lesson-card:hover{border-color:var(--depth)}
+html:not([data-look="mc"]) body .lesson-info{min-width:0;display:grid;gap:3px;padding:0!important;margin:0!important}
+html:not([data-look="mc"]) body .lesson-info b{font-size:15px;letter-spacing:-.02em}
+html:not([data-look="mc"]) body .lesson-info small{color:var(--muted)}
+html:not([data-look="mc"]) body .lesson-info .progress{margin-top:6px;height:5px;border-radius:99px;background:var(--surface2)}
+html:not([data-look="mc"]) body .lesson-info .progress span{border-radius:99px;background:var(--accent)}
+html:not([data-look="mc"]) body .lesson-actions{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:center;gap:8px;margin:0;position:static!important}
+html:not([data-look="mc"]) body .lesson-actions>*{position:static!important;margin:0!important;width:auto!important;inset:auto!important}
+html:not([data-look="mc"]) body .lesson-actions .btn.small{min-height:38px;padding:0 14px}
+html:not([data-look="mc"]) body .lesson-actions .more-btn{width:38px!important;height:38px!important;min-width:38px!important}
+html:not([data-look="mc"]) body .lesson-actions .btn.small.primary{width:auto!important}
+
+/* ---- search + toolbars ---- */
+html:not([data-look="mc"]) body .library-toolbar{gap:10px;margin-bottom:20px}
+html:not([data-look="mc"]) body .search input{height:44px;border-radius:12px}
+
+/* ---- segmented tabs: flat, filled like buttons ---- */
+html:not([data-look="mc"]) body :is(.create-tabs,.workflow-tabs){padding:4px;border-radius:12px;background:var(--surface2);box-shadow:none;border:1px solid var(--line)}
+html:not([data-look="mc"]) body :is(.create-tabs .tabs-slider,.workflow-tabs .workflow-slider){background:var(--accent)!important;background-image:none!important;box-shadow:none!important;border-radius:9px;top:4px;bottom:4px;left:4px}
+html:not([data-look="mc"]) body .create-tabs .tab{border-radius:9px;font-weight:650}
+
+/* ---- modals ---- */
+html:not([data-look="mc"]) body .modal-backdrop{background:rgba(8,8,10,.46);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+html:not([data-look="mc"]) body .modal{border:1px solid var(--line);border-radius:20px;box-shadow:0 30px 80px -20px rgba(0,0,0,.35)}
+html:not([data-look="mc"]) body .modal-head h2{font-size:24px;letter-spacing:-.035em}
+html:not([data-look="mc"]) body .modal-head .eyebrow{font-size:12.5px}
+
+/* ---- study mode picker: 3 x 2, left aligned ---- */
+html:not([data-look="mc"]) body .mode-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+html:not([data-look="mc"]) body .mode-option{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:6px;padding:14px;border-radius:12px;background:var(--surface);box-shadow:none}
+html:not([data-look="mc"]) body .mode-option.active,html:not([data-look="mc"]) body .mode-option[aria-pressed="true"],html:not([data-look="mc"]) body .mode-option.selected{border-color:var(--text);box-shadow:inset 0 0 0 1px var(--text);background:var(--surface)}
+@media(max-width:560px){html:not([data-look="mc"]) body .mode-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ---- study + quiz ---- */
+html:not([data-look="mc"]) body .flashcard{border-radius:22px;border:1px solid var(--line);background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.04),0 24px 48px -28px rgba(0,0,0,.25)}
+html:not([data-look="mc"]) body .flashcard:hover{box-shadow:0 1px 2px rgba(0,0,0,.04),0 24px 48px -28px rgba(0,0,0,.25)}
+html:not([data-look="mc"]) body .choice{border:1px solid var(--line);border-radius:12px;background:var(--surface);box-shadow:none}
+html:not([data-look="mc"]) body .choice:hover:not(:disabled){border-color:var(--text);box-shadow:none;transform:none}
+html:not([data-look="mc"]) body .choice:active:not(:disabled){transform:scale(.985);box-shadow:none}
+html:not([data-look="mc"]) body .choice.correct{border-color:var(--good);background:color-mix(in srgb,var(--good) 10%,var(--surface));box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 18%,transparent)}
+html:not([data-look="mc"]) body .choice.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 9%,var(--surface));box-shadow:0 0 0 3px color-mix(in srgb,var(--bad) 16%,transparent)}
+html:not([data-look="mc"]) body .study-progress{height:6px;border-radius:99px}
+html:not([data-look="mc"]) body .study-progress span{border-radius:99px}
+
+/* ---- bottom nav (phones) ---- */
+html:not([data-look="mc"]) body .bottom-nav{background:color-mix(in srgb,var(--surface) 92%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--line);box-shadow:none}
+html:not([data-look="mc"]) body .bottom-nav button{position:relative;color:var(--muted);font-weight:600}
+html:not([data-look="mc"]) body .bottom-nav button .bottom-icon,html:not([data-look="mc"]) body .bottom-nav button.active .bottom-icon{background:none!important;box-shadow:none!important;color:inherit!important;width:26px;height:26px;border-radius:0}
+html:not([data-look="mc"]) body .bottom-nav button.active{color:var(--text)}
+html:not([data-look="mc"]) body .bottom-nav button.active::before{content:"";position:absolute;top:-1px;left:30%;right:30%;height:2px;border-radius:0 0 2px 2px;background:var(--accent)}
+
+/* ---- misc surfaces ---- */
+html:not([data-look="mc"]) body .toast{background:var(--text);color:var(--bg);border:0;border-radius:12px;box-shadow:0 14px 34px rgba(0,0,0,.25)}
+html:not([data-look="mc"]) body .empty-state{border:1px dashed var(--line);border-radius:var(--r);background:transparent;box-shadow:none}
+html:not([data-look="mc"]) body .empty-state .empty-icon{background:var(--surface2);color:var(--text);box-shadow:none}
+html:not([data-look="mc"]) body .sq-install{border-radius:12px;box-shadow:none;background:var(--accent);color:var(--on-accent,#fff)}
+@media(max-width:800px){html:not([data-look="mc"]) body .sq-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--line);border-radius:99px;font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums;flex:0 0 auto}html:not([data-look="mc"]) body .sq-chip svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}}
+@media(prefers-reduced-motion:reduce){.sq-hud .hud-bar>span{transition:none}}
+
+/* ---- phones ---- */
+@media(max-width:560px){
+ html:not([data-look="mc"]) body .library-toolbar .search{flex:1 1 100%;min-width:100%}
+ html:not([data-look="mc"]) body .lesson-card{grid-template-columns:1fr}
+ html:not([data-look="mc"]) body .lesson-actions{justify-content:flex-start}
+ html:not([data-look="mc"]) body .page-title{font-size:30px}
+}
+@media(max-width:430px){
+ html:not([data-look="mc"]) body .topbar{gap:2px!important;padding:0 8px!important}
+ html:not([data-look="mc"]) body .topbar .icon-btn{width:34px;height:34px;min-width:34px;min-height:34px}
+ html:not([data-look="mc"]) body .topbar-title{font-size:15px}
+ html:not([data-look="mc"]) body .sq-chip{padding:4px 8px;font-size:12px}
+}
+
+/* ---- create page: no heavy top rule, plain tab icons ---- */
+html:not([data-look="mc"]) body .create-mode-panel .panel,html:not([data-look="mc"]) body .create-mode-panel:first-child .panel{border-top:1px solid var(--line)}
+html:not([data-look="mc"]) body .tab-symbol,html:not([data-look="mc"]) body .create-tabs .tab:not(.active) .tab-symbol{background:none;color:inherit;width:auto;height:auto;border-radius:0}
+html:not([data-look="mc"]) body .create-tabs .tab.active{color:var(--on-accent,#fff)}
+html:not([data-look="mc"]) body .workflow-tab{border-radius:12px;box-shadow:none}
+html:not([data-look="mc"]) body .workflow-tab.active{box-shadow:none;transform:none}
+
+/* ---- quiz action row: no white strip behind buttons ---- */
+html:not([data-look="mc"]) body .study-actions{background:transparent!important;border:0!important;box-shadow:none!important;padding-left:0;padding-right:0}
+/* ---- due today: actions always hug the right edge, even when they wrap ---- */
+html:not([data-look="mc"]) body .due-today-panel{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 18px}
+html:not([data-look="mc"]) body .due-today-panel>.actions{display:flex!important;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:10px;margin-left:auto;flex:0 1 auto;max-width:100%}
+html:not([data-look="mc"]) body .due-today-panel>.actions>*{width:auto!important;flex:0 0 auto;margin:0!important}
+
+/* ===== comfort + accessibility layer ===== */
+.sq-skip{position:fixed;left:12px;top:-60px;z-index:99999;background:var(--text);color:var(--bg);padding:12px 18px;border-radius:10px;font-weight:700;text-decoration:none;transition:top .15s}
+.sq-skip:focus{top:12px}
+html body :focus-visible{outline:3px solid var(--text)!important;outline-offset:3px!important}
+html body :is(.btn,.primary,.icon-btn,.nav-btn,.choice,.flashcard,.swatch,.chip):focus-visible{outline-offset:2px!important}
+html:not([data-look="mc"]) body :is(small,.stat-note,.tag,.tap-hint,.panel-desc,.settings-row small){font-size:13px}
+html:not([data-look="mc"]) body :is(.sidebar-footer,.brand-sub){font-size:12px}
+html:not([data-look="mc"]) body .bottom-nav button{font-size:12px}
+html:not([data-look="mc"]) body .choice{min-height:56px}
+@media(pointer:coarse){html:not([data-look="mc"]) body .icon-btn,html:not([data-look="mc"]) body .topbar .icon-btn{min-width:44px!important;min-height:44px!important;width:44px;height:44px}html:not([data-look="mc"]) body .subject-card>.card-actions .more-btn,html:not([data-look="mc"]) body .lesson-actions .more-btn{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;max-width:44px!important;max-height:44px!important}html:not([data-look="mc"]) body .nav-btn{min-height:46px}}
+@media(max-width:430px) and (pointer:coarse){html:not([data-look="mc"]) body .topbar .icon-btn{width:38px!important;min-width:38px!important;height:38px;min-height:38px!important}}
+html[data-text="l"] .view{zoom:1.12}html[data-text="xl"] .view{zoom:1.26}
+html[data-text="l"] .modal{zoom:1.1;max-height:calc((100dvh - 24px)/1.1)}html[data-text="xl"] .modal{zoom:1.2;max-height:calc((100dvh - 24px)/1.2)}
+html[data-read="1"] body,html[data-read="1"] :is(button,input,select,textarea){font-family:Verdana,"Trebuchet MS",Tahoma,sans-serif!important;letter-spacing:.02em;word-spacing:.07em}
+html[data-read="1"] :is(p,.front,.back,.feedback,.choice,small,.panel-desc){line-height:1.75!important}
+html[data-calm="1"] *,html[data-calm="1"] *::before,html[data-calm="1"] *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+html[data-calm="1"] canvas{display:none!important}
+html[data-contrast="1"]{--muted:#25262b!important;--line:#80808a!important}
+html[data-contrast="1"][data-theme="dark"]{--muted:#ececf0!important;--line:#6e6e78!important}
+@media(prefers-contrast:more){html{--muted:#25262b!important;--line:#80808a!important}html[data-theme="dark"]{--muted:#ececf0!important;--line:#6e6e78!important}}
+@media(prefers-reduced-motion:reduce){html *,html *::before,html *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.comfort-sizes{display:flex;gap:8px;flex-wrap:wrap}
+
+/* kids mode */
+html[data-kid="1"] body .btn:not(.small):not(.icon-btn),html[data-kid="1"] body .primary:not(.small):not(.icon-btn){min-height:52px;border-radius:16px;font-size:16px}
+html[data-kid="1"] body :is(.panel,.subject-card,.stats,.modal,.lesson-card,.flashcard,.choice,.mode-option){border-radius:20px}
+html[data-kid="1"] body .nav-btn{min-height:52px;font-size:16px;border-radius:14px}
+html[data-kid="1"] body .nav-active-slider{border-radius:14px}
+html[data-kid="1"] body .choice{min-height:68px;font-size:1.08em}
+html[data-kid="1"] body .stat .stat-note{display:none}
+html[data-kid="1"] body .page-title{letter-spacing:-.02em}
+</style>
+
 </head>
 <body>
+<a class="sq-skip" href="#viewport" onclick="setTimeout(()=>document.getElementById('viewport').focus(),0)">Skip to content</a>
 <div id="sqSplash" role="status" aria-live="polite" aria-label="Loading StudyQuest"><div class="sp-logo"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M10 25Q22 20 32 26V51Q22 46 10 50Z" fill="#fff"/><path d="M54 25Q42 20 32 26V51Q42 46 54 50Z" fill="#e4e1ff"/><path d="M32 6l2.8 6.8L42 15.5l-7.2 2.7L32 25l-2.8-6.8L22 15.5l7.2-2.7z" fill="#ffd54a"/></svg></div><div class="sp-name">StudyQuest</div><div class="sp-tag">Play. Study. Level up.</div><div class="sp-bar"><i></i></div></div>
 <!--
 ================================================================================
@@ -1553,19 +1818,20 @@ html body .subject-card:not(:has(.card-actions))>.subject-meta{margin-right:0;mi
     <button class="nav-btn" data-nav="about" onclick="navigate('about')"><span class="nav-icon"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg></span><span class="nav-label">Help & About</span></button>
   </nav>
   <div class="sidebar-spacer"></div>
+  <div class="sq-hud" id="sqHud" aria-label="Your level"><div class="hud-top"><span class="hud-lv">Lv <span id="sqHudLv">1</span></span><span class="hud-st"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 .3 1.2 1 2 2 2 0-3-1-5 1-8z"/></svg><span id="sqHudSt">0</span> day streak</span></div><div class="hud-bar"><span id="sqHudFill"></span></div><div class="hud-note"><span id="sqHudXp">0</span> / 200 XP to next level</div></div>
   <div class="sidebar-footer"><span class="sidebar-footer-label">Private by default</span><br><span class="sidebar-footer-label">Your study data stays in this browser.</span></div>
 </aside>
 <!-- ========== 2. MAIN AREA ========== -->
 <div class="main-area">
   <header class="topbar">
     <button class="icon-btn hamburger" aria-label="Open navigation" onclick="toggleDrawer()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></button>
-    <div class="topbar-title" id="topbarTitle">Home</div><div class="topbar-spacer"></div>
+    <div class="topbar-title" id="topbarTitle">Home</div><span class="sq-chip" id="sqChip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 .3 1.2 1 2 2 2 0-3-1-5 1-8z"/></svg><span id="sqChipTxt">Lv 1</span></span><div class="topbar-spacer"></div>
     <button class="icon-btn" id="sqHeadBtn" title="AI assistant" aria-label="AI assistant" onclick="sqToggle()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/><path d="M19 15l.8 1.9 1.9.8-1.9.8L19 20.4l-.8-1.9-1.9-.8 1.9-.8z"/></svg></button>
     <button class="icon-btn" title="Settings" aria-label="Settings" onclick="openSettings()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
     <button class="icon-btn" title="Toggle theme" aria-label="Toggle theme" onclick="toggleTheme()"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18Z" fill="currentColor"/></svg></button>
     <button class="icon-btn" id="soundBtn" title="Sound" aria-label="Toggle sound" onclick="quickSoundToggle()"></button>
   </header>
-  <main class="viewport" id="viewport"><section class="view" id="view"></section></main>
+  <main class="viewport" id="viewport" tabindex="-1"><section class="view" id="view"></section></main>
 </div>
 </div>
 <!-- ========== 3. MOBILE DRAWER ========== -->
@@ -1590,7 +1856,7 @@ html body .subject-card:not(:has(.card-actions))>.subject-meta{margin-right:0;mi
 </nav>
 <!-- ========== 5. MODAL + TOAST ========== -->
 <div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this)closeModal()"><div class="modal" id="modal"></div></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
 
 /* ==================================================================================
@@ -2269,7 +2535,7 @@ const promptPanel=`<div class="panel workflow-panel"><div class="eyebrow">Step 1
 const outputPanel=`<div class="panel workflow-panel"><div class="page-head compact-head"><div><div class="eyebrow">Step 2 · Import</div><h2>Bring in your generated cards</h2><p class="page-subtitle">Choose a file or paste the AI output. Review the parsed cards before saving.</p></div></div><div class="field"><label>How will you provide the output?</label><select id="outputImportMethod" onchange="setOutputImportMethod(this.value)"><option value="file" ${importMethod==="file"?"selected":""}>Choose a TXT / XML / TSV / JSON file</option><option value="paste" ${importMethod==="paste"?"selected":""}>Paste or type output</option></select></div><div id="importFilePanel" class="${importMethod==="file"?"":"hidden"}"><label class="file-drop" id="fileDrop" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="dropImportFile(event)"><div class="file-drop-icon">${icon("up")}</div><b id="importFileLabel">${importFileName?esc(importFileName):"Choose a text or JSON file"}</b><p class="muted" style="font-size:11px" id="importFileHint">${importFileName?"Click or drop another file to replace it":"Click or drop here · UTF-8 TXT / XML / TSV StudyDeck or JSON deck"}</p><input type="file" id="importFile" hidden accept=".txt,.xml,.tsv,.json,text/plain,text/xml,application/xml,text/tab-separated-values,application/json" onchange="readImportFile(this)"></label><p class="panel-desc">After selecting a file, the content will be validated and shown for review.</p></div><div id="importPastePanel" class="${importMethod==="paste"?"":"hidden"}"><div class="field"><label>StudyDeck output</label><textarea id="aiOutput" placeholder="Paste the complete StudyDeck output here (v3 XML, TSV or JSON)…" oninput="importPasteText=this.value;pendingRows=null;updatePasteStats()">${esc(importPasteText)}</textarea><small>No app-imposed character or card-count limit. Paste the complete response, including the format header. Very large imports may still be limited by available browser storage.</small><small id="pasteStats" aria-live="polite">${importPasteText.length.toLocaleString()} characters · ${Math.max(0,importPasteText.split(/\r?\n/).filter(x=>x.trim()).length-3).toLocaleString()} non-empty lines after headers</small></div></div><div class="eq-actions import-actions" id="importActions" style="margin-top:18px">${importActionsHTML()}</div><div id="importPreview">${pendingRows?renderImportPreview():""}</div></div>`;
 return `${workflowTabs}<div class="workflow-switch-viewport"><div class="workflow-switch-track ${importStep==='output'?'active-step-2':''}"><section class="workflow-slide-panel ${importStep==='prompt'?'active':''}">${promptPanel}</section><section class="workflow-slide-panel ${importStep==='output'?'active':''}">${outputPanel}</section></div></div>`}
 /* FN: openSettings — open Settings modal */
-function openSettings(){syncNav();openModal(`<div class="modal-head"><div><div class="eyebrow">Preferences</div><h2>Settings</h2><p>Adjust how this workspace behaves on your device.</p></div><button class="icon-btn" onclick="closeModal()">×</button></div><div class="settings-row"><div><b>Mobile bottom navigation</b><small>Show a compact tab bar on narrow screens instead of relying only on the menu drawer.</small></div>${mcSwitch(settings.bottomTabs,"toggleBottomTabs(this)","Mobile bottom navigation")}</div><div class="settings-row stack"><div><b>Interface color</b><small>Black and white by default (black buttons in light mode, white in dark mode). Pick a color if you want one. Saved on this device.</small></div><div class="swatches">${ACCENTS.map(a=>`<button type="button" class="swatch ${accentId()===a.id?"on":""}" data-accent="${a.id}" style="--sw:${a.id==="mono"?"linear-gradient(135deg,#0c0c0e 50%,#ffffff 50%)":`hsl(${a.h} 70% ${a.h>=45&&a.h<195?42:52}%)`}" title="${a.name}" aria-label="${a.name}" onclick="setAccent('${a.id}')"></button>`).join("")}<label class="swatch custom ${accentId().startsWith("#")?"on":""}" data-accent="custom" title="Custom color"><input type="color" value="${accentId().startsWith("#")?accentId():"#635bdb"}" onchange="setAccent(this.value)" aria-label="Custom color"><span>+</span></label></div></div><div class="settings-row"><div><b>Sound effects</b><small>Soft clicks, correct and wrong tones, and slide whooshes.</small></div>${mcSwitch(soundPrefs.sfx,"toggleSound(this,'sfx')","Sound effects")}</div><div class="settings-row"><div><b>Ambient music</b><small>Soft generated background music. It gets quieter during quizzes and pauses when the tab is hidden.</small></div>${mcSwitch(soundPrefs.music,"toggleSound(this,'music')","Ambient music")}</div><div class="settings-row stack"><div><b>Sound mix</b><small>Effects volume, music volume and music mood.</small></div><div class="sound-mix"><label>Effects<input type="range" min="0" max="100" value="${Math.round(soundPrefs.sfxVol*100)}" oninput="setSoundVol('sfxVol',this.value)" aria-label="Effects volume"></label><label>Music<input type="range" min="0" max="100" value="${Math.round(soundPrefs.musicVol*100)}" oninput="setSoundVol('musicVol',this.value)" aria-label="Music volume"></label><div class="mood-chips">${["lofi","calm","focus","night"].map(m=>`<button type="button" class="chip ${soundPrefs.mood===m?"on":""}" onclick="setMood('${m}',this)">${m}</button>`).join("")}</div></div></div><div class="settings-row"><div><b>Celebration effects</b><small>Confetti and bursts for combos and finished sessions.</small></div>${mcSwitch(soundPrefs.fx,"toggleSound(this,'fx')","Celebration effects")}</div>${lookRow()}<div class="settings-row"><div><b>AI providers (BYOK)</b><small>Add one or more API keys. If one hits its limit, the next one is used.</small></div><button class="btn" onclick="openByok()">${icon("sparkle")}Manage</button></div><div class="settings-row"><div><b>Appearance</b><small>Switch between light and dark workspace themes.</small></div><button class="btn" onclick="toggleTheme()">${icon("theme")}Toggle theme</button></div><div class="settings-row"><div><b>Export backup</b><small>Download your subjects and cards as JSON for backup.</small></div><button class="btn" onclick="exportBackup()">${icon("up")}Export JSON</button></div><div class="settings-row"><div><b>Import backup</b><small>Restore a JSON backup created by this workspace.</small></div><label class="btn">${icon("up")}Choose JSON<input type="file" accept=".json,application/json" style="display:none" onchange="importBackup(this)"></label></div><div class="modal-actions"><button class="btn" onclick="closeModal()">Done</button></div>`)}
+function openSettings(){syncNav();openModal(`<div class="modal-head"><div><div class="eyebrow">Preferences</div><h2>Settings</h2><p>Adjust how this workspace behaves on your device.</p></div><button class="icon-btn" onclick="closeModal()">×</button></div>${sqComfortRows()}<div class="settings-row"><div><b>Mobile bottom navigation</b><small>Show a compact tab bar on narrow screens instead of relying only on the menu drawer.</small></div>${mcSwitch(settings.bottomTabs,"toggleBottomTabs(this)","Mobile bottom navigation")}</div><div class="settings-row stack"><div><b>Interface color</b><small>Black and white by default (black buttons in light mode, white in dark mode). Pick a color if you want one. Saved on this device.</small></div><div class="swatches">${ACCENTS.map(a=>`<button type="button" class="swatch ${accentId()===a.id?"on":""}" data-accent="${a.id}" style="--sw:${a.id==="mono"?"linear-gradient(135deg,#0c0c0e 50%,#ffffff 50%)":`hsl(${a.h} 70% ${a.h>=45&&a.h<195?42:52}%)`}" title="${a.name}" aria-label="${a.name}" onclick="setAccent('${a.id}')"></button>`).join("")}<label class="swatch custom ${accentId().startsWith("#")?"on":""}" data-accent="custom" title="Custom color"><input type="color" value="${accentId().startsWith("#")?accentId():"#635bdb"}" onchange="setAccent(this.value)" aria-label="Custom color"><span>+</span></label></div></div><div class="settings-row"><div><b>Sound effects</b><small>Soft clicks, correct and wrong tones, and slide whooshes.</small></div>${mcSwitch(soundPrefs.sfx,"toggleSound(this,'sfx')","Sound effects")}</div><div class="settings-row"><div><b>Ambient music</b><small>Soft generated background music. It gets quieter during quizzes and pauses when the tab is hidden.</small></div>${mcSwitch(soundPrefs.music,"toggleSound(this,'music')","Ambient music")}</div><div class="settings-row stack"><div><b>Sound mix</b><small>Effects volume, music volume and music mood.</small></div><div class="sound-mix"><label>Effects<input type="range" min="0" max="100" value="${Math.round(soundPrefs.sfxVol*100)}" oninput="setSoundVol('sfxVol',this.value)" aria-label="Effects volume"></label><label>Music<input type="range" min="0" max="100" value="${Math.round(soundPrefs.musicVol*100)}" oninput="setSoundVol('musicVol',this.value)" aria-label="Music volume"></label><div class="mood-chips">${["lofi","calm","focus","night"].map(m=>`<button type="button" class="chip ${soundPrefs.mood===m?"on":""}" onclick="setMood('${m}',this)">${m}</button>`).join("")}</div></div></div><div class="settings-row"><div><b>Celebration effects</b><small>Confetti and bursts for combos and finished sessions.</small></div>${mcSwitch(soundPrefs.fx,"toggleSound(this,'fx')","Celebration effects")}</div>${lookRow()}<div class="settings-row"><div><b>AI providers (BYOK)</b><small>Add one or more API keys. If one hits its limit, the next one is used.</small></div><button class="btn" onclick="openByok()">${icon("sparkle")}Manage</button></div><div class="settings-row"><div><b>Appearance</b><small>Switch between light and dark workspace themes.</small></div><button class="btn" onclick="toggleTheme()">${icon("theme")}Toggle theme</button></div><div class="settings-row"><div><b>Export backup</b><small>Download your subjects and cards as JSON for backup.</small></div><button class="btn" onclick="exportBackup()">${icon("up")}Export JSON</button></div><div class="settings-row"><div><b>Import backup</b><small>Restore a JSON backup created by this workspace.</small></div><label class="btn">${icon("up")}Choose JSON<input type="file" accept=".json,application/json" style="display:none" onchange="importBackup(this)"></label></div><div class="modal-actions"><button class="btn" onclick="closeModal()">Done</button></div>`)}
 /* FN: openReviewSubject — open subject in Review page filter */
 function openReviewSubject(id){reviewSubjectOpen=String(id);reviewLessonOpen=null;render()}
 /* FN: openReviewLesson — open lesson in Review page filter */
@@ -2934,7 +3200,7 @@ function openMatchPage(sid,lid){sessionSetup={...sessionSetup,subject:sid||"all"
 function mgPrepare(){const n=Math.min(6,mg.pool.length),cards=[];for(let i=0;i<n;i++)cards.push(mg.pool[(mg.pos+i)%mg.pool.length]);mg.pos=(mg.pos+n)%mg.pool.length;mg.n=n;mg.left=n;mg.miss=0;mg.start=Date.now();mg.sel=null;mg.lock=false;mg.done=false;mg.round++;mg.secs=0;mg.speed=!!sessionSetup.speedrun;mg.limit=Math.max(5,Number(sessionSetup.seconds)||60);mg.tiles=shuffle(cards.flatMap(c=>{const q=c.mq||c.front,a=c.ma||c.back,k=String(a).toLowerCase().replace(/\s+/g," ").trim();return [{id:c.id,k,side:"q",t:q},{id:c.id,k,side:"a",t:a}]}));clearInterval(mg.timer);if(mg.speed)mg.timer=setInterval(()=>{const e=document.getElementById("mgTime");if(!e||mg.done){clearInterval(mg.timer);return}const r=Math.max(0,mg.limit-Math.round((Date.now()-mg.start)/1000));e.textContent=formatTime(r);if(!r)mgTimeUp()},500)}
 function mgNext(){mgPrepare();render()}
 function mgTimeUp(){if(mg.done)return;mg.done=true;clearInterval(mg.timer);const got=mg.n-mg.left,i=document.getElementById("mgInfo");if(i)i.textContent="Time is up!";const l=document.getElementById("mgLeft");if(l)l.textContent=`You matched ${got} of ${mg.n} pairs with ${mg.miss} miss${mg.miss===1?"":"es"}.`;const a=document.getElementById("mgActs");if(a)a.innerHTML=`<button class="btn" onclick="mgQuit()">Done</button><button class="btn primary" onclick="mgNext()">Try another round \u2192</button>`;sqAward(Math.max(5,5*got))}
-function mgQuit(){clearInterval(mg.timer);mg.done=true;navigate("subjects")}
+function mgQuit(){const go=()=>{clearInterval(mg.timer);mg.done=true;navigate("subjects")};if(mg.done)return go();confirmModal("Leave Matching Grid?","Your game will stop and will not be counted.","Leave",go,true)}
 function matchView(){if(!mg.tiles)return emptyState(icon("sparkle"),"No active game","Pick Matching Grid in the study setup.",`<button class="btn primary" onclick="openSessionSetup()">${icon("play")}Choose study mode</button>`);
 return `<div class="view-inner mg-page"><div class="study-top"><div class="study-bar"><button class="btn small study-exit" onclick="mgQuit()" aria-label="Exit game">${icon("close")}<span class="exit-label">Exit</span></button><div class="study-title"><div class="eyebrow">Matching Grid · Round ${mg.round}</div><div class="study-count"><b id="mgInfo">${mg.done?"Cleared!":"Match the pairs"}</b></div></div><div class="study-score">${mg.speed?`<span class="tag timer" id="mgTime">${formatTime(mg.limit)}</span>`:""}<span class="tag" id="mgMiss">${mg.miss} miss${mg.miss===1?"":"es"}</span></div></div></div><div class="study-progress"><span id="mgBar" style="width:${(mg.n-mg.left)/mg.n*100}%"></span></div><div class="panel mg-panel"><div class="mg-grid" id="mgGrid">${mg.tiles.map(x=>`<button type="button" class="mg-tile ${x.side}${String(x.t).length>70?" long":""}" data-id="${esc(x.id)}" data-k="${esc(x.k)}" data-side="${x.side}" title="${esc(x.t)}" onclick="mgPick(this)"><span>${esc(x.t)}</span></button>`).join("")}</div><p class="mg-hint" id="mgLeft">${mg.left} pair${mg.left===1?"":"s"} left. Tap a question, then its answer.</p></div><div class="actions mg-actions" id="mgActs"></div></div>`}
 function mgPick(b){if(mg.lock||mg.done||b.classList.contains("done"))return;if(mg.sel===b){b.classList.remove("sel");mg.sel=null;return}
@@ -2956,7 +3222,7 @@ function migrateLegacyProgress(){try{if(localStorage.getItem("sf-progress-migrat
 /* ===== F2. STUDY VIEW RENDERER ===== */
 /* FN: studyView — render active study card UI (all modes) */
 function studyView(){const s=currentSession;if(!s)return emptyState(icon("sparkle"),"No active session","Choose a subject and study mode.",`<button class="btn primary" onclick="navigate('subjects')">${icon("library")}Open library</button>`);const c=s.cards[s.index];if(!c)return "";const pct=(s.index/s.cards.length)*100,prevPct=s.__pp??pct,bump=s.__pc!==undefined&&s.correct>s.__pc;s.__pp=pct;s.__pc=s.correct;let content="";
- if(s.mode==="flash"){content=`<div class="flashcard ${s.revealed?"revealed":""}" onclick="revealFlashcard()" role="button" tabindex="0" aria-label="Reveal flashcard answer">${s.revealed?`<div class="eyebrow">Answer</div><div class="back">${esc(c.back)}</div>${c.explanation?`<div class="feedback">${esc(c.explanation)}</div>`:""}${c.example?`<div class="feedback"><b>Example</b><br>${esc(c.example)}</div>`:""}${isReview(s)?"":`<div class="tap-hint">Rate your confidence below</div>`}`:`<div class="eyebrow">${esc(c.lessonName||"Study card")}</div><div class="front">${esc(c.front)}</div><div class="tap-hint">Tap the card to reveal the answer</div>`}</div>${!isReview(s)&&!s.revealed?"":`<div class="study-actions">${isReview(s)?`<span class="tag">You rated: ${({review:"Review again",hard:"Hard",easy:"Got it"})[(s.ratings||{})[s.index]]||"not rated"}</span>`:`<button class="btn" onclick="rateFlash('review')">Review again</button><button class="btn" onclick="rateFlash('hard')">Hard</button><button class="btn primary" onclick="rateFlash('easy')">Got it</button>`}</div>`}`}
+ if(s.mode==="flash"){content=`<div class="flashcard ${s.revealed?"revealed":""}" onclick="revealFlashcard()" role="button" tabindex="0" aria-label="Flip flashcard">${s.revealed&&s.frontIdx!==s.index?`<div class="eyebrow">Answer</div><div class="back">${esc(c.back)}</div>${c.explanation?`<div class="feedback">${esc(c.explanation)}</div>`:""}${c.example?`<div class="feedback"><b>Example</b><br>${esc(c.example)}</div>`:""}<div class="tap-hint">${isReview(s)?"Tap to see the question":"Tap to see the question, or rate below"}</div>`:`<div class="eyebrow">${esc(c.lessonName||"Study card")}</div><div class="front">${esc(c.front)}</div><div class="tap-hint">${s.revealed?"Tap to see the answer again":"Tap the card to reveal the answer"}</div>`}</div>${!isReview(s)&&!s.revealed?"":`<div class="study-actions">${isReview(s)?`<span class="tag">You rated: ${({review:"Review again",hard:"Hard",easy:"Got it"})[(s.ratings||{})[s.index]]||"not rated"}</span>`:`<button class="btn" onclick="rateFlash('review')">Review again</button><button class="btn" onclick="rateFlash('hard')">Hard</button><button class="btn primary" onclick="rateFlash('easy')">Got it</button>`}</div>`}`}
  else if(s.mode==="mcq"){const opts=s.currentOptions||(s.currentOptions=buildOptions(c,s.cards));content=`<div class="panel"><div class="eyebrow">Choose the best answer</div><div class="page-title" style="font-size:25px">${esc(c.front)}</div><div class="choices${opts.some(o=>String(o.value).length>26)?" stack":""}">${opts.map((o,i)=>`<button class="choice${s.answered?(o.correct?" correct":(i===s.pickedIndex?" wrong":"")):""}" ${s.answered?"disabled":""} onclick="answerChoice(${i})"><span class="key">${i+1}</span><span class="choice-text">${esc(o.value)}</span></button>`).join("")}</div>${hintBlock(s)}${s.feedback?`<div class="feedback ${s.lastCorrect?"good":"bad"}"><b>${s.lastCorrect?"Correct":"Not quite"}</b><br>${s.lastCorrect?"Nice work.":`Correct answer: ${esc(c.back)}`}${fbExtra(c)}${whyBlock(s,c)}</div>`:""}</div><div class="study-actions">${s.answered?`<button class="btn primary" onclick="nextStudyCard()">Next card →</button>`:`${hintBtn(s,c)}<button class="btn" onclick="revealInSession()">Reveal answer</button>`}</div>`}
  else if(s.mode==="type"){content=`<div class="panel"><div class="eyebrow">Recall from memory</div><div class="page-title" style="font-size:25px">${esc(c.front)}</div>${typeBlanksHTML(s,c)}<div class="field type-field"><label>Your answer</label><input id="typedAnswer" class="${s.answerMatch?(s.lastCorrect?"answer-correct":"answer-wrong"):""}" placeholder="Type your answer…" value="${esc(s.draft||"")}" ${s.answered?"disabled":""} autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" oninput="onTypeInput()" onfocus="typeFocus(this)" onkeydown="if(event.key==='Enter')checkTypedAnswer()"></div>${s.feedback?`<div class="feedback ${s.lastCorrect?"good":"bad"}"><b>${s.overriddenCorrect?"Marked correct by you":s.answerMatch==="close"?"Accepted: close enough.":s.lastCorrect?"Correct":"Correct answer: "+esc(c.back)}</b>${s.answerMatch==="close"?`<br>Answer: ${esc(c.back)}`:""}${fbExtra(c)}</div>`:""}</div><div class="study-actions">${s.answered?`${!s.lastCorrect&&!s.overriddenCorrect?`<button class="btn" onclick="overrideCorrect()">I was right</button>`:""}<button class="btn primary" onclick="nextStudyCard()">Next card →</button>`:`${hintBtn(s,c)}<button class="btn" onclick="revealInSession()">Reveal</button><button class="btn primary" onclick="checkTypedAnswer()">Check answer</button>`}</div>`}
  else{const tf=s.currentTF||(s.currentTF=makeTF(c,s.cards));const trueClass=s.answered?(tf.answer?" correct":(s.pickedTF===true?" wrong":"")):"",falseClass=s.answered?(!tf.answer?" correct":(s.pickedTF===false?" wrong":"")):"";content=`<div class="panel"><div class="eyebrow">True or false</div>${tf.kind==="pair"?`<div class="page-title" style="font-size:25px">${esc(tf.q)}</div><div class="tf-claim"><span>Proposed answer</span>${esc(tf.a)}</div>`:`<div class="page-title" style="font-size:25px">${esc(tf.text)}</div>`}<div class="choices"><button class="choice${trueClass}" ${s.answered?"disabled":""} onclick="answerTF(true)"><span class="key">T</span><span class="choice-text">True</span></button><button class="choice${falseClass}" ${s.answered?"disabled":""} onclick="answerTF(false)"><span class="key">F</span><span class="choice-text">False</span></button></div>${hintBlock(s)}${s.feedback?`<div class="feedback ${s.lastCorrect?"good":"bad"}"><b>${s.lastCorrect?"Correct":"Not quite"}</b><br>Correct answer: ${tf.answer?"True":"False"}${tf.kind==="pair"?` · ${esc(c.back)}`:""}${fbExtra(c)}${whyBlock(s,c)}</div>`:""}</div><div class="study-actions">${s.answered?`<button class="btn primary" onclick="nextStudyCard()">Next card →</button>`:`${hintBtn(s,c)}<button class="btn" onclick="revealInSession()">Reveal answer</button>`}</div>`}
@@ -3292,7 +3558,7 @@ function buildMCQOptions(current){
 function buildOptions(c,cards){return buildMCQOptions(c)}
 /* ===== H. STUDY INTERACTIONS ===== */
 /* FN: revealFlashcard — flip flashcard to show answer */
-function revealFlashcard(){const s=currentSession;if(!s||s.mode!=="flash"||s.revealed)return;s.revealed=true;s.revealsUsed=(s.revealsUsed||0)+1;Sound.play("flip");render()}
+function revealFlashcard(){const s=currentSession;if(!s||s.mode!=="flash")return;if(s.revealed){s.frontIdx=s.frontIdx===s.index?-1:s.index;Sound.play("flip");render();return}s.revealed=true;s.revealsUsed=(s.revealsUsed||0)+1;Sound.play("flip");render()}
 /* FN: rateFlash — rate flashcard review/hard/easy then next */
 function rateFlash(level){const s=currentSession;if(!s||s.mode!=="flash"||s.busy||isReview(s))return;s.ratings=s.ratings||{};s.ratings[s.index]=level;Sound.play(level==="easy"?"correct":level==="hard"?"tick":"low",1);const card=s.cards[s.index];s.flashScores=s.flashScores||{};s.flashScores[card.id]=level==="easy"?1:level==="hard"?.5:0;s.correct=Object.values(s.flashScores).filter(v=>v>0).length;s.known=s.correct;scheduleFlashCard(card,level);updateSpeedrunStreak(s,level!=="review");if(level==="review")s.cards.push(card);nextStudyCard()}
 /* FN: answerChoice — handle MCQ choice click */
@@ -3736,7 +4002,7 @@ ${extra}
 STUDY MATERIAL:
 ${material}`;
 }
-document.addEventListener("keydown",e=>{const s=currentSession;if(viewName!=="study"||!s||!e.target?.matches||e.target.matches("input,textarea,select,button")||e.target.isContentEditable||$("#modalBackdrop").classList.contains("open"))return;if(e.key==="ArrowLeft"){e.preventDefault();goBackStudy();return}if(e.key==="ArrowRight"){if(isReview(s)||s.answered){e.preventDefault();nextStudyCard()}return}if(s.mode==="flash"){if((e.key===" "||e.key==="Enter")&&!s.revealed){e.preventDefault();revealFlashcard()}else if(s.revealed){if(e.key==="1")rateFlash("review");if(e.key==="2")rateFlash("hard");if(e.key==="3")rateFlash("easy")}}else if(s.mode==="mcq"){if(!s.answered&&/^[1-4]$/.test(e.key))answerChoice(+e.key-1);else if(s.answered&&(e.key==="Enter"||e.key===" ")){e.preventDefault();nextStudyCard()}}else if(s.mode==="tf"){if(!s.answered){if(e.key.toLowerCase()==="t")answerTF(true);if(e.key.toLowerCase()==="f")answerTF(false)}else if(e.key==="Enter")nextStudyCard()}});
+document.addEventListener("keydown",e=>{const s=currentSession;if(viewName!=="study"||!s||!e.target?.matches||e.target.matches("input,textarea,select,button")||e.target.isContentEditable||$("#modalBackdrop").classList.contains("open"))return;if(e.key==="ArrowLeft"){e.preventDefault();goBackStudy();return}if(e.key==="ArrowRight"){if(isReview(s)||s.answered){e.preventDefault();nextStudyCard()}return}if(s.mode==="flash"){if(e.key===" "||e.key==="Enter"){e.preventDefault();revealFlashcard()}else if(s.revealed){if(e.key==="1")rateFlash("review");if(e.key==="2")rateFlash("hard");if(e.key==="3")rateFlash("easy")}}else if(s.mode==="mcq"){if(!s.answered&&/^[1-4]$/.test(e.key))answerChoice(+e.key-1);else if(s.answered&&(e.key==="Enter"||e.key===" ")){e.preventDefault();nextStudyCard()}}else if(s.mode==="tf"){if(!s.answered){if(e.key.toLowerCase()==="t")answerTF(true);if(e.key.toLowerCase()==="f")answerTF(false)}else if(e.key==="Enter")nextStudyCard()}});
 /* ===== K2. POLISH PASS: action menus, bulk delete, export method, help format ===== */
 ICONS.more='<circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/>';
 ICONS.close='<path d="M6 6l12 12"/><path d="M18 6 6 18"/>';
@@ -4039,6 +4305,73 @@ if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!standalone()&&!sessionStorage
 window.sqSend=function(){if(sqBot.busy){try{sqBot.ctl.abort()}catch{}return}
 const b=document.querySelector('#sqBot button[onclick="sqSend()"]'),h=b&&b.innerHTML;if(b)b.textContent="Stop";
 let r;try{r=o()}catch(e){if(b)b.innerHTML=h;throw e}Promise.resolve(r).catch(()=>{}).finally(()=>{if(b)b.innerHTML=h});return r}})();
+</script>
+<script>
+/* quest HUD: level, xp and streak shown in the sidebar and (on phones) the top bar */
+(function(){
+ function upd(){try{
+  var p=(typeof sqProg==="function"?sqProg():{})||{},xp=p.xp||0,st=(typeof sqStreakNow==="function"?sqStreakNow():0)||0,lv=Math.floor(xp/200)+1,into=xp%200;
+  var g=function(i){return document.getElementById(i)};
+  if(g("sqHudLv"))g("sqHudLv").textContent=lv;
+  if(g("sqHudSt"))g("sqHudSt").textContent=st;
+  if(g("sqHudXp"))g("sqHudXp").textContent=into;
+  if(g("sqHudFill"))g("sqHudFill").style.width=(into/200*100)+"%";
+  if(g("sqChipTxt"))g("sqChipTxt").textContent="Lv "+lv+(st?" \u00b7 "+st+"d":"");
+  var h=g("sqHud");if(h)h.classList.toggle("hot",st>0);
+ }catch(e){}}
+ try{var r=window.render;if(typeof r==="function"&&!r.__sqHud){var w=function(){var o=r.apply(this,arguments);upd();return o};w.__sqHud=1;window.render=w}}catch(e){}
+ document.addEventListener("visibilitychange",upd);window.addEventListener("storage",upd);upd();
+})();
+</script>
+<script>
+/* comfort settings: text size, easy reading, calm motion, high contrast (saved on this device) */
+(function(){
+ var K="sq-comfort";
+ function get(){try{return JSON.parse(localStorage.getItem(K))||{}}catch(e){return{}}}
+ function apply(){var c=get(),d=document.documentElement;
+  d.setAttribute("data-text",c.text||"m");
+  ["read","calm","contrast","kid"].forEach(function(k){if(c[k])d.setAttribute("data-"+k,"1");else d.removeAttribute("data-"+k)})}
+ function save(c){try{localStorage.setItem(K,JSON.stringify(c))}catch(e){}apply()}
+ window.sqComfortSize=function(v,el){var c=get();c.text=v;save(c);if(el&&el.parentNode)Array.prototype.forEach.call(el.parentNode.children,function(b){b.classList.toggle("on",b===el);b.setAttribute("aria-pressed",b===el)})};
+ window.sqComfortTog=function(k,el){var c=get();c[k]=!c[k];if(k==="kid"){if(c.kid){c.text=c.text&&c.text!=="m"?c.text:"l";c.read=true}else{c.text="m";c.read=false}}save(c);if(k==="kid"&&typeof openSettings==="function"){setTimeout(openSettings,0);return}if(el){el.classList.toggle("on",!!c[k]);el.setAttribute("aria-checked",!!c[k]);var t=el.querySelector(".mc-txt");if(t)t.textContent=c[k]?"ON":"OFF"}};
+ window.sqComfortRows=function(){var c=get(),t=c.text||"m";
+  var chips=[["m","Normal"],["l","Large"],["xl","Extra large"]].map(function(x){return '<button type="button" class="chip '+(t===x[0]?"on":"")+'" aria-pressed="'+(t===x[0])+'" onclick="sqComfortSize(\''+x[0]+'\',this)">'+x[1]+'</button>'}).join("");
+  var row=function(k,b,s){return '<div class="settings-row"><div><b>'+b+'</b><small>'+s+'</small></div>'+mcSwitch(!!c[k],"sqComfortTog('"+k+"',this)",b)+'</div>'};
+  return '<div class="settings-row stack"><div><b>Text size</b><small>Make everything bigger and easier to read. Saved on this device.</small></div><div class="comfort-sizes">'+chips+'</div></div>'
+   +row("read","Easy reading","Wider spacing and a clearer font. Helpful for dyslexia and for younger readers.")
+   +row("calm","Calm motion","Turns off slides, flips and confetti. Good if animations feel dizzy.")
+   +row("contrast","High contrast","Darker text and stronger lines.")
+   +row("kid","Kids mode","Bigger buttons, rounder shapes and friendlier spacing. Also turns on large text and easy reading.")
+   +row("speak","Read questions aloud","Reads each new card out loud when you reach it. Needs a device that supports speech.")};
+ apply();
+ window.addEventListener("beforeunload",function(e){try{if(typeof viewName!=="undefined"&&viewName==="study"&&typeof currentSession!=="undefined"&&currentSession){e.preventDefault();e.returnValue=""}}catch(x){}});
+})();
+</script>
+<script>
+/* resume an unfinished quiz after refresh + optional read-aloud of each new card */
+(function(){
+ var K="sq-resume",seen=false,lastSpoken="";
+ function comfort(){try{return JSON.parse(localStorage.getItem("sq-comfort"))||{}}catch(e){return{}}}
+ function snap(){try{
+  if(typeof viewName==="undefined")return;
+  if(viewName==="study"&&currentSession&&!currentSession.timeLimit&&!currentSession.speedrun){seen=true;
+    var o=JSON.stringify(currentSession);if(o.length<900000)localStorage.setItem(K,o)}
+  else if(seen&&viewName!=="study"){localStorage.removeItem(K);seen=false}
+ }catch(e){}}
+ function speak(){try{
+  var c=comfort();if(!c.speak||viewName!=="study"||!currentSession||currentSession.mode==="match")return;
+  var s=currentSession,key=s.index+":"+(s.cards&&s.cards[s.index]&&s.cards[s.index].id);
+  if(key===lastSpoken)return;lastSpoken=key;
+  if(typeof sqSpeak==="function"&&window.speechSynthesis)setTimeout(function(){if(!s.revealed&&!s.answered)sqSpeak()},450)
+ }catch(e){}}
+ try{var r=window.render;if(typeof r==="function"){var w=function(){var o=r.apply(this,arguments);snap();speak();return o};window.render=w}}catch(e){}
+ setTimeout(function(){try{
+  var raw=localStorage.getItem(K);if(!raw||currentSession)return;
+  var s=JSON.parse(raw);if(!s||!s.cards||!s.cards.length||s.index>=s.cards.length){localStorage.removeItem(K);return}
+  confirmModal("Pick up where you left off?","You were on card "+(s.index+1)+" of "+s.cards.length+" in a study session.","Resume quiz",function(){currentSession=s;seen=true;navigate("study")},false);
+  var cancel=document.querySelector("#modal .modal-actions .btn:not(.primary)");if(cancel){cancel.textContent="Start fresh";cancel.setAttribute("onclick","localStorage.removeItem('sq-resume');closeModal()")}
+ }catch(e){}},1800);
+})();
 </script>
 </body>
 </html>
